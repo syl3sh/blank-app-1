@@ -3,7 +3,6 @@ import pandas as pd
 import io
 import re
 from PIL import Image
-import paramiko
 import requests
 import time
 import subprocess
