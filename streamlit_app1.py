@@ -127,7 +127,7 @@ if sid:
             else:
                 st.session_state["confirm_restart"]=True
                 st.warning("Click restart again to confirm.")
-    st.divider()
+   st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
     util_info = get_utilization(sid)
@@ -137,10 +137,11 @@ if sid:
         col1.metric("Models",data.get("model","N/A"))
         col2.metric("CPU_Temp",f"{data.get("sys_temp","N/A")}°C")
         col3.metric("System Status",data.get("sys_status","N/A"))
+
+        with st.expander("Full system info(raw)"):
+            st.json(data)
     else:
         st.error(f"System info failed:{sys_info.get('error')}")
-    st.divider()
-
     
     if util_info.get("success"):
         util = util_info["data"]
@@ -150,7 +151,9 @@ if sid:
             col1.metric("CPU usage", f"{util['cpu'].get('user_load', 'N/A')}%")
         if "memory" in util:
             col2.metric("Memory Usage", f"{util['memory'].get('real_usage', 'N/A')}%")
-        st.divider()
+
+        with st.expander("Full utilization info (raw)"):
+            st.json(util)
         
     else:
         st.warning(f"Utilization info failed: {util_info.get('error')}")
@@ -200,6 +203,8 @@ if sid:
 
                 st.divider()
 
+        with st.expander("Full storage info (raw)"):
+            st.json(storage_info["data"])
     else:
         st.error(f"Storage info failed: {storage_info.get('error')}")
 else:
