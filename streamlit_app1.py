@@ -8,7 +8,7 @@ import time
 import subprocess
 st.header("NAS System Dashboard", divider="rainbow")
 
-base = "http://QuickConnect.to/Testsvrs:5000/webapi"
+base = "http://QuickConnect.to/Testsvrs/webapi"
 wifi = st.secrets["secrets"]["wifiname"]
 wifipassword=st.secrets["secrets"]["wifipasswd"]
 
