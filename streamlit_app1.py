@@ -27,6 +27,9 @@ connect_to_wifi(f"{wifi}",f"{wifipassword}")
 
 @st.cache_data(ttl=30)
 def get_sid():
+                    
+                
+        
     try:
         login = requests.get(f"{base}/auth.cgi", params={
                 "api":"SYNO.API.Auth",
@@ -90,6 +93,34 @@ def get_utilization(sid):
 sid = get_sid()
 
 if sid:
+        st.subheader("Power Controls")
+    col_shutdown,col_restart=st.columns(2)
+
+    with col_shutdown:
+        if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
+            if st.session_state.get("confirm_shutdown"):
+                result = shutdown_nas(sid)
+                if result.get("success"):
+                    st.success("NAS is shutting down...")
+                else:
+                    st.error(f"Shutdown failed: {result.get('error')}")
+                st.session_state["confirm_shutdown"]=False
+            else:
+                st.session_state["confirm_shutdown"]=True
+                st.warning("Click shutdown again to confirm.")
+    with col_restart:
+        if st.button("🔄 Restart NAS", use_container_width=True):
+            if st.session_state.get("confirm_restart"):
+                result=result_nas(sid)
+                if result.get("success"):
+                    st.success("NAS is restarting...")
+                else:
+                    st.error(f"Restart failed: {result.get('error')}")
+                st.session_state["confirm_restart"]=False
+            else:
+                st.session_state["confirm_restart"]=True
+                st.warning("Click restart again to confirm.")
+    st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
     util_info = get_utilization(sid)
