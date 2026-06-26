@@ -93,7 +93,7 @@ def get_utilization(sid):
 sid = get_sid()
 
 if sid:
-        st.subheader("Power Controls")
+    st.subheader("Power Controls")
     col_shutdown,col_restart=st.columns(2)
 
     with col_shutdown:
