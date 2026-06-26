@@ -127,7 +127,7 @@ if sid:
             else:
                 st.session_state["confirm_restart"]=True
                 st.warning("Click restart again to confirm.")
-   st.divider()
+    st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
     util_info = get_utilization(sid)
