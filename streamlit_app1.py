@@ -27,6 +27,7 @@ connect_to_wifi(f"{wifi}",f"{wifipassword}")
 
 
 @st.cache_data(ttl=30)
+@st.fragment(run_every="30m")
 def get_sid():
                     
                 
