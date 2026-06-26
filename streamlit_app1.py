@@ -137,10 +137,6 @@ if sid:
         col2.metric("CPU_Temp",f"{data.get("sys_temp","N/A")}°C")
         col3.metric("System Status",data.get("sys_status","N/A"))
 
-        with st.expander("Full system info(raw)"):
-            st.json(data)
-    else:
-        st.error(f"System info failed:{sys_info.get('error')}")
     
     if util_info.get("success"):
         util = util_info["data"]
