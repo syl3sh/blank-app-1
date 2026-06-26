@@ -27,7 +27,6 @@ connect_to_wifi(f"{wifi}",f"{wifipassword}")
 
 
 @st.cache_data(ttl=30)
-@st.fragment(run_every="30m")
 def get_sid():
                     
                 
@@ -91,6 +90,23 @@ def get_utilization(sid):
         "_sid":sid
     })
     return resp.json()
+def shutdown_nas(sid):
+    resp = requests.get(f"{base}/entry.cgi", params={
+        "api": "SYNO.Core.System",
+        "version": "1",
+        "method": "shutdown",
+        "_sid": sid
+    }, timeout=10)
+    return resp.json()
+
+def restart_nas(sid):
+    resp = requests.get(f"{base}/entry.cgi", params={
+        "api":"SYNO.Core.System",
+        "version": "1",
+        "method": "reboot",
+        "_sid":sid
+    }, timeout=10)
+    return resp.json()
 
 sid = get_sid()
 
@@ -101,11 +117,11 @@ if sid:
     with col_shutdown:
         if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
             if st.session_state.get("confirm_shutdown"):
-                shutdowntime=st.datetime_input(Label="Select time for shutdown",
+                shutdowntime = st.date_input("Select date for shutdown", value=datetime.datetime.now())
                 value=datetime.datetime.now(), min_value=datetime.datetime.now(),)
                 today1 = datetime.datetime.now()
                 time_difference1 = shutdowntime-today1
-                if timedifference1 <= 0:
+                if time_difference1 <= 0:
                     result = shutdown_nas(sid)
                     if result.get("success"):
                         st.success("NAS is shutting down...")
