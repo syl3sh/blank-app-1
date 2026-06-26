@@ -118,7 +118,7 @@ if sid:
         if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
             if st.session_state.get("confirm_shutdown"):
                 shutdowntime = st.date_input("Select date for shutdown", value=datetime.datetime.now())
-                value=datetime.datetime.now(), min_value=datetime.datetime.now(),)
+                value=datetime.datetime.now(), min_value=datetime.datetime.now())
                 today1 = datetime.datetime.now()
                 time_difference1 = shutdowntime-today1
                 if time_difference1 <= 0:
