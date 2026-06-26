@@ -136,6 +136,9 @@ if sid:
         col1.metric("Models",data.get("model","N/A"))
         col2.metric("CPU_Temp",f"{data.get("sys_temp","N/A")}°C")
         col3.metric("System Status",data.get("sys_status","N/A"))
+    else:
+        st.error(f"System info failed:{sys_info.get('error')}")
+    st.divider()
 
     
     if util_info.get("success"):
