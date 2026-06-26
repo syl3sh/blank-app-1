@@ -115,22 +115,29 @@ if sid:
     col_shutdown,col_restart=st.columns(2)
 
     with col_shutdown:
+        shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
+        shudown_time = st.time_input("Shutdown time", value=datetime.time(22,0))
+        shutdowntime = datetime.datetime.combine(shutdown_date,shutdown_time)
         if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
             if st.session_state.get("confirm_shutdown"):
-                shutdowntime = st.date_input("Select date for shutdown", value=datetime.datetime.now())
-                value=datetime.datetime.now(), min_value=datetime.datetime.now()
-                today1 = datetime.datetime.now()
-                time_difference1 = shutdowntime-today1
-                if time_difference1 <= 0:
-                    result = shutdown_nas(sid)
-                    if result.get("success"):
-                        st.success("NAS is shutting down...")
-                    else:
-                        st.error(f"Shutdown failed: {result.get('error')}")
-                        st.session_state["confirm_shutdown"] = False
+                st.session_state["shutdowntime"] = shutdowntime
+                st.session_state["confirm_shutdown"] = False
+                st.success(f"Shutdown scheduled for {shutdowntime.strftime('%Y-%m-%d %H:%M')}")
             else:
                 st.session_state["confirm_shutdown"] = True
                 st.warning("Click Shutdown again to confirm.")
+        if "shutdowntime" in st.sessions_state:
+            time_difference1 = st.session_state["shutdowntime"]-datetime.datetime.now()
+            mins_left = int(time_difference1.total_seconds()/60)
+            if time_difference1.total_seconds() <= 0:
+                result = shutdown_nas(sid)
+                if result.get("success"):
+                    st.success("NAS is shutting down...")
+                    del st.session_state["shutdowntime"]
+                else:
+                    st.error(f"Shutdown failed: {result.get('error')}")
+            else:
+                st.info(f"Shutdown in {mins_left} minutes")
     with col_restart:
         if st.button("🔄 Restart NAS", use_container_width=True):
             if st.session_state.get("confirm_restart"):
