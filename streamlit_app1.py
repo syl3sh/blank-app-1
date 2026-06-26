@@ -6,6 +6,7 @@ from PIL import Image
 import requests
 import time
 import subprocess
+import datetime
 st.header("NAS System Dashboard", divider="rainbow")
 
 base = "http://testsvrs.synology.me:5000/webapi"
@@ -99,15 +100,20 @@ if sid:
     with col_shutdown:
         if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
             if st.session_state.get("confirm_shutdown"):
-                result = shutdown_nas(sid)
-                if result.get("success"):
-                    st.success("NAS is shutting down...")
-                else:
-                    st.error(f"Shutdown failed: {result.get('error')}")
-                st.session_state["confirm_shutdown"]=False
+                shutdowntime=st.datetime_input(Label="Select time for shutdown",
+                value=datetime.datetime.now(), min_value=datetime.datetime.now(),)
+                today1 = datetime.datetime.now()
+                time_difference1 = shutdowntime-today1
+                if timedifference1 <= 0:
+                    result = shutdown_nas(sid)
+                    if result.get("success"):
+                        st.success("NAS is shutting down...")
+                    else:
+                        st.error(f"Shutdown failed: {result.get('error')}")
+                        st.session_state["confirm_shutdown"] = False
             else:
-                st.session_state["confirm_shutdown"]=True
-                st.warning("Click shutdown again to confirm.")
+                st.session_state["confirm_shutdown"] = True
+                st.warning("Click Shutdown again to confirm.")
     with col_restart:
         if st.button("🔄 Restart NAS", use_container_width=True):
             if st.session_state.get("confirm_restart"):
