@@ -172,7 +172,7 @@ if sid:
     with col_turnon:
         if st.button("Turn on NAS", use_container_width=True):
             wake_nas()
-            st.success("Magic Pocket Sent. NAS will turn on soon")
+            st.success("Magic Packet Sent. NAS will turn on soon")
     st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
