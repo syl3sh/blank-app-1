@@ -139,14 +139,30 @@ if sid:
             else:
                 st.info(f"Shutdown in {mins_left} minutes")
     with col_restart:
+        restart_date = st.date_input("Restart date",min_value=datetime.date.today())
+        restart_time = st.time_input("Restart time", value=datetime.time(22,0))
+        restarttime = datetime.datetime.combine(restart_date,restart_time)
         if st.button("🔄 Restart NAS", use_container_width=True):
             if st.session_state.get("confirm_restart"):
-                result=result_nas(sid)
-                if result.get("success"):
+                st.session_state["restarttime"] = restarttime
+                st.session_state["confirm_restart"] = False
+                st.success(f"Restart scheduled for {restarttime.strftime('%Y-%m-%d %H:%M')}")
+            else:
+                st.session_state["confirm_restart"] = True
+                st.warning("Click Restart again to confirm.")
+        if "restarttime" in st.session_state:
+            timedifference2 = st.session_state["restarttime"]=datetime.datetime.now()
+            mins_left1 = int(time_difference2.total_seconds()/60)
+            if timedifference2.total_seconds()<=0:
+                result1 = restart_nas(sid)
+                if result1.get("success"):
                     st.success("NAS is restarting...")
-                else:
-                    st.error(f"Restart failed: {result.get('error')}")
-                st.session_state["confirm_restart"]=False
+                    del st.session_state["restarttime"]
+                    else:
+                        st.error(f"Restart failed: {result1.get('error')}")
+            else:
+                st.info(f"Restart in {mins_left1} minutes")
+            
             else:
                 st.session_state["confirm_restart"]=True
                 st.warning("Click restart again to confirm.")
