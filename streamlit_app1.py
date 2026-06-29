@@ -7,6 +7,7 @@ import requests
 import time
 import subprocess
 import datetime
+import wakeonlan
 st.header("NAS System Dashboard", divider="rainbow")
 
 base = "http://testsvrs.synology.me:5000/webapi"
@@ -107,12 +108,15 @@ def restart_nas(sid):
         "_sid":sid
     }, timeout=10)
     return resp.json()
+def wake_nas():
+    wakeonlan.send_magic_packet("00-11-32-C0-13-58")
+    return True
 
 sid = get_sid()
 
 if sid:
     st.subheader("Power Controls")
-    col_shutdown,col_restart=st.columns(2)
+    col_shutdown,col_restart,col_turnon=st.columns(3)
 
     with col_shutdown:
         shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
@@ -165,6 +169,10 @@ if sid:
         else:
             st.session_state["confirm_restart"]=True
             st.warning("Click restart again to confirm.")
+    with col_turnon:
+        if st.button("Turn on NAS", use_container_width=True):
+            wake_nas()
+            st.success("Magic Pocket Sent. NAS will turn on soon)
     st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
