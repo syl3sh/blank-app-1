@@ -126,7 +126,7 @@ if sid:
             else:
                 st.session_state["confirm_shutdown"] = True
                 st.warning("Click Shutdown again to confirm.")
-        if "shutdowntime" in st.sessions_state:
+        if "shutdowntime" in st.session_state:
             time_difference1 = st.session_state["shutdowntime"]-datetime.datetime.now()
             mins_left = int(time_difference1.total_seconds()/60)
             if time_difference1.total_seconds() <= 0:
