@@ -158,14 +158,13 @@ if sid:
                 if result1.get("success"):
                     st.success("NAS is restarting...")
                     del st.session_state["restarttime"]
-                    else:
-                        st.error(f"Restart failed: {result1.get('error')}")
+                else:
+                    st.error(f"Restart failed: {result1.get('error')}")
             else:
                 st.info(f"Restart in {mins_left1} minutes")
-            
-            else:
-                st.session_state["confirm_restart"]=True
-                st.warning("Click restart again to confirm.")
+        else:
+            st.session_state["confirm_restart"]=True
+            st.warning("Click restart again to confirm.")
     st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
