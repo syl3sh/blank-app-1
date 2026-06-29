@@ -161,8 +161,7 @@ if sid:
         col2.metric("CPU_Temp",f"{data.get("sys_temp","N/A")}°C")
         col3.metric("System Status",data.get("sys_status","N/A"))
 
-        with st.expander("Full system info(raw)"):
-            st.json(data)
+        
     else:
         st.error(f"System info failed:{sys_info.get('error')}")
     
@@ -175,8 +174,7 @@ if sid:
         if "memory" in util:
             col2.metric("Memory Usage", f"{util['memory'].get('real_usage', 'N/A')}%")
 
-        with st.expander("Full utilization info (raw)"):
-            st.json(util)
+        
         
     else:
         st.warning(f"Utilization info failed: {util_info.get('error')}")
@@ -226,8 +224,7 @@ if sid:
 
                 st.divider()
 
-        with st.expander("Full storage info (raw)"):
-            st.json(storage_info["data"])
+       
     else:
         st.error(f"Storage info failed: {storage_info.get('error')}")
 else:
