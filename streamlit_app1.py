@@ -116,7 +116,7 @@ if sid:
 
     with col_shutdown:
         shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
-        shudown_time = st.time_input("Shutdown time", value=datetime.time(22,0))
+        shutdown_time = st.time_input("Shutdown time", value=datetime.time(22,0))
         shutdowntime = datetime.datetime.combine(shutdown_date,shutdown_time)
         if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
             if st.session_state.get("confirm_shutdown"):
