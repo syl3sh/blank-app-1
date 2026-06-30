@@ -7,7 +7,6 @@ import requests
 import time
 import subprocess
 import datetime
-import wakeonlan
 st.header("NAS System Dashboard", divider="rainbow")
 
 base = "http://testsvrs.synology.me:5000/webapi"
