@@ -8,6 +8,9 @@ import time
 import subprocess
 import datetime
 import wakeonlan
+import pytz
+
+sgt = pytz.timezone("Asia/Singapore")
 
 st.header("NAS System Dashboard", divider="rainbow")
 
@@ -122,7 +125,7 @@ if sid:
     with col_shutdown:
         shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
         shutdown_time = st.time_input("Shutdown time", value=datetime.time(22,0))
-        shutdowntime = datetime.datetime.combine(shutdown_date,shutdown_time)
+        shutdowntime = sgt.localize(datetime.datetime.combine(shutdown_date,shutdown_time))
         if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
             if st.session_state.get("confirm_shutdown"):
                 st.session_state["shutdowntime"] = shutdowntime
@@ -132,7 +135,8 @@ if sid:
                 st.session_state["confirm_shutdown"] = True
                 st.warning("Click Shutdown again to confirm.")
         if "shutdowntime" in st.session_state:
-            time_difference1 = st.session_state["shutdowntime"]-datetime.datetime.now()
+            now_in_sgt = datetime.datetime.now(sgt)
+            time_difference1 = st.session_state["shutdowntime"]-now_in_sgt
             mins_left = int(time_difference1.total_seconds()/60)
             if time_difference1.total_seconds() <= 0:
                 result = shutdown_nas(sid)
@@ -146,7 +150,7 @@ if sid:
     with col_restart:
         restart_date = st.date_input("Restart date",min_value=datetime.date.today())
         restart_time = st.time_input("Restart time", value=datetime.time(22,0))
-        restarttime = datetime.datetime.combine(restart_date,restart_time)
+        restarttime = sgt.localize(datetime.datetime.combine(restart_date,restart_time))
         if st.button("🔄 Restart NAS", use_container_width=True):
             if st.session_state.get("confirm_restart"):
                 st.session_state["restarttime"] = restarttime
@@ -156,7 +160,8 @@ if sid:
                 st.session_state["confirm_restart"] = True
                 st.warning("Click Restart again to confirm.")
         if "restarttime" in st.session_state:
-            timedifference2 = st.session_state["restarttime"]=datetime.datetime.now()
+            now_in_sgt = datetime.datetime.now(sgt)
+            timedifference2 = st.session_state["restarttime"]-now_in_sgt
             mins_left1 = int(time_difference2.total_seconds()/60)
             if timedifference2.total_seconds()<=0:
                 result1 = restart_nas(sid)
