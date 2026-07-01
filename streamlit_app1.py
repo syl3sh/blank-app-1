@@ -179,10 +179,9 @@ if sid:
     util_info = get_utilization(sid)
     if sys_info.get("success"):
         data = sys_info["data"]
-        col1,col2,col3 = st.columns(3)
-        col1.metric("Models",data.get("model","N/A"))
-        col2.metric("CPU_Temp",f"{data.get("sys_temp","N/A")}°C")
-        col3.metric("System Status",data.get("sys_status","N/A"))
+        col1,col2 = st.columns(2)
+        col1.metric("Model",data.get("model","N/A"))
+        col2.metric("CPU Temperature",f"{data.get("sys_temp","N/A")}°C")
 
         
     else:
