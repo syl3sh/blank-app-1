@@ -144,8 +144,8 @@ if sid:
             else:
                 st.info(f"Shutdown in {mins_left} minutes")
     with col_restart:
-        restart_date = st.date_input("Restart date",min_value=datetime.date.today())
-        restart_time = st.time_input("Restart time", value=datetime.time(22,0))
+        restart_date = st.date_input("Restart date",min_value1=datetime.date.today())
+        restart_time = st.time_input("Restart time", value1=datetime.time(22,0))
         restarttime = datetime.datetime.combine(restart_date,restart_time)
         if st.button("🔄 Restart NAS", use_container_width=True):
             if st.session_state.get("confirm_restart"):
