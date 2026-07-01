@@ -162,7 +162,7 @@ if sid:
         if "restarttime" in st.session_state:
             now_in_sgt = datetime.datetime.now(sgt)
             timedifference2 = st.session_state["restarttime"]-now_in_sgt
-            mins_left1 = int(time_difference2.total_seconds()/60)
+            mins_left1 = int(timedifference2.total_seconds()/60)
             if timedifference2.total_seconds()<=0:
                 result1 = restart_nas(sid)
                 if result1.get("success"):
