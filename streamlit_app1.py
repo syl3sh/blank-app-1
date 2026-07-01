@@ -196,6 +196,9 @@ if sid:
         if "memory" in util:
             col2.metric("Memory Usage", f"{util['memory'].get('real_usage', 'N/A')}%")
 
+    with st.expander("Full utilization info (raw)"):
+            st.json(util)
+
         
         
     else:
