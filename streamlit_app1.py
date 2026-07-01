@@ -169,9 +169,6 @@ if sid:
                 st.info(f"Restart in {mins_left1} minutes")
       
     with col_turnon:
-        turnon_date=st.date_input("Turn on date",min_value2=datetime.date.today())
-        turnon_time=st.time_input("Turn on time",value2=datetime.time(22,0))
-        turnontime=datetime.datetime.combine(turnon_date,turnon_time)   
         if st.button("Turn on NAS", use_container_width=True):
             
             wake_nas()
