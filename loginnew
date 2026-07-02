@@ -1,0 +1,33 @@
+import streamlit as st
+import pandas as pd
+import io
+import re
+from PIL import Image
+import requests
+import time
+import subprocess
+import datetime
+import wakeonlan
+import pytz
+from pathlib import Path
+import streamlit_authenticator as stauth
+
+
+sgt = pytz.timezone("Asia/Singapore")
+
+names = ['admins']
+usernames = ['admin']
+
+file_path = Path(__file__).parent/"hashpswds.pkl"
+with file_path.open("rb") as file:
+    hashed_passwords = pickle.load(file)
+
+authenticator=stauth.Authenticate(names,usernames,hashedpasswords,"web_cookie", "hgfedcba", cookie_expiry_days = 30)
+
+name, authentication_status, username = authenticator.login("Login","main")
+
+if authentication_status == False:
+    st.error("Username/Password is incorrect")
+if authentication_status == None:
+    st.warning("Please enter Username and Password")
+if authentication_status:
