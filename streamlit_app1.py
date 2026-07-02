@@ -104,9 +104,9 @@ def get_utilization(sid):
         "_sid":sid
     })
         return resp.json()
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            st.error("Lost connection to NAS while fetching utilization info.")
-            return {}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        st.error("Lost connection to NAS while fetching utilization info.")
+        return {}
 
         
 def shutdown_nas(sid):
