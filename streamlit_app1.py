@@ -138,6 +138,11 @@ def wake_nas():
 
 sid = get_sid()
 
+if st.button("Turn on NAS", use_container_width=True):
+    wake_nas()
+    st.success("Magic Packet Sent. NAS will turn on soon")
+    
+
 if sid:
     st.subheader("Power Controls")
     col_shutdown,col_restart,col_turnon=st.columns(3)
@@ -275,8 +280,6 @@ if sid:
 else:
     st.stop()
 
-if st.button("Turn on NAS", use_container_width=True):
-    wake_nas()
-    st.success("Magic Packet Sent. NAS will turn on soon")
+
 time.sleep(30)
 st.rerun()
