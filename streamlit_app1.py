@@ -146,7 +146,7 @@ if st.button("Turn on NAS", use_container_width=True):
 
 if sid:
     
-    col_shutdown,col_restart,col_turnon=st.columns(3)
+    col_shutdown,col_restart=st.columns(2)
 
     with col_shutdown:
         shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
