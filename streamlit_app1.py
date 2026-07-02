@@ -130,8 +130,8 @@ def restart_nas(sid):
         "_sid":sid
     }, timeout=10)
         return resp.json()
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            return {"success": False, "error": "Connection lost"}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"success": False, "error": "Connection lost"}
 def wake_nas():
     wakeonlan.send_magic_packet("00-11-32-C0-13-58")
     return True
