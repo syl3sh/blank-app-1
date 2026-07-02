@@ -15,8 +15,8 @@ import streamlit_authenticator as stauth
 
 sgt = pytz.timezone("Asia/Singapore")
 
-st.header("NAS System Dashboard", divider="rainbow")
 
+st.header("NAS Syst Dashboard", divider="rainbow")
 base = "http://testsvrs.synology.me:5000/webapi"
 wifi = st.secrets["secrets"]["wifiname"]
 wifipassword=st.secrets["secrets"]["wifipasswd"]
