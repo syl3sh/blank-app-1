@@ -79,7 +79,7 @@ def get_system_info(sid):
         "method": "info",
         "_sid": sid
     })
-    return resp.json()
+        return resp.json()
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             st.error("Lost connection to NAS while fetching system info.")
             return {}
