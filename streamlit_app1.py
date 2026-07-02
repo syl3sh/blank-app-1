@@ -72,46 +72,66 @@ def get_sid():
         return None
     return data["data"]["sid"]
 def get_system_info(sid):
-    resp = requests.get(f"{base}/entry.cgi", params={
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
         "api": "SYNO.Core.System",
         "version": 1,
         "method": "info",
         "_sid": sid
     })
     return resp.json()
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            st.error("Lost connection to NAS while fetching system info.")
+            return {}
 def get_storage_info(sid):
-    resp = requests.get(f"{base}/entry.cgi", params= {
+    try: 
+        resp = requests.get(f"{base}/entry.cgi", params= {
         "api": "SYNO.Storage.CGI.Storage",
         "version": 1,
         "method":"load_info",
         "_sid": sid
         })
-    return resp.json()
+        return resp.json()
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            st.error("Lost connection to NAS while fetching storage info.")
+            return {}
 def get_utilization(sid):
-    resp = requests.get(f"{base}/entry.cgi", params={
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
         "api":"SYNO.Core.System.Utilization",
         "version": 1,
         "method":"get",
         "_sid":sid
     })
-    return resp.json()
+        return resp.json()
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            st.error("Lost connection to NAS while fetching utilization info.")
+            return {}
+
+        
 def shutdown_nas(sid):
-    resp = requests.get(f"{base}/entry.cgi", params={
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
         "api": "SYNO.Core.System",
         "version": "1",
         "method": "shutdown",
         "_sid": sid
     }, timeout=10)
-    return resp.json()
+        return resp.json()
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            return {"success": False, "error": "Connection lost"}
 
 def restart_nas(sid):
-    resp = requests.get(f"{base}/entry.cgi", params={
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
         "api":"SYNO.Core.System",
         "version": "1",
         "method": "reboot",
         "_sid":sid
     }, timeout=10)
-    return resp.json()
+        return resp.json()
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            return {"success": False, "error": "Connection lost"}
 def wake_nas():
     wakeonlan.send_magic_packet("00-11-32-C0-13-58")
     return True
