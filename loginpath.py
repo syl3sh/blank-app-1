@@ -4,7 +4,7 @@ from pathlib import Path
 
 names = ['admins']
 username = ['admin']
-passwords = ['Testsvr$#604']
+passwords = ['*****']
 
 hashed_passwords = [bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode() for p in passwords]
 
