@@ -92,9 +92,9 @@ def get_storage_info(sid):
         "_sid": sid
         })
         return resp.json()
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            st.error("Lost connection to NAS while fetching storage info.")
-            return {}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        st.error("Lost connection to NAS while fetching storage info.")
+        return {}
 def get_utilization(sid):
     try:
         resp = requests.get(f"{base}/entry.cgi", params={
