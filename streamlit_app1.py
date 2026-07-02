@@ -173,11 +173,7 @@ if sid:
             else:
                 st.info(f"Restart in {mins_left1} minutes")
       
-    with col_turnon:
-        if st.button("Turn on NAS", use_container_width=True):
-            
-            wake_nas()
-            st.success("Magic Packet Sent. NAS will turn on soon")
+
     st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
@@ -259,5 +255,8 @@ if sid:
 else:
     st.stop()
 
+if st.button("Turn on NAS", use_container_width=True):
+    wake_nas()
+    st.success("Magic Packet Sent. NAS will turn on soon")
 time.sleep(30)
 st.rerun()
