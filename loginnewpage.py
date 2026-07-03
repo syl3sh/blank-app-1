@@ -43,9 +43,9 @@ st.session_state['authenticator'] = authenticator
 
 authenticator.login()
 
-if st.session_state.get('authentication_status') = False:
+if st.session_state.get('authentication_status') is False:
     st.error("Username/Password is incorrect")
-elif st.session_state.get('authentication_status') = None:
+elif st.session_state.get('authentication_status') is None:
     st.warning("Please enter username and password")
 elif st.session_state.get('authentication_status'):
     st.page_link("pages/streamlit_app1.py", label = "go to dashboard")
