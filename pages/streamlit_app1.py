@@ -14,7 +14,8 @@ sgt = pytz.timezone("Asia/Singapore")
 
 
 st.header("NAS Syst Dashboard", divider="rainbow")
-base = "http://testsvrs.synology.me:5000/webapi"
+base = "https://testsvrs.sg4.quickconnect.to/5000/webapi"
+
 
 config = {
     "credentials": {
