@@ -39,4 +39,14 @@ authenticator = stauth.Authenticate(
     config['cookie']['key'],
     config['cookie']['expiry_days']
 )
+st.session_state['authenticator'] = authenticator
+
+authenticator.login()
+
+if st.session_state.get('authentication_status') = False:
+    st.error("Username/Password is incorrect")
+elif st.session_state.get('authentication_status') = None:
+    st.warning("Please enter username and password")
+elif st.session_state.get('authentication_status'):
+    st.page_link("pages/streamlit_app1.py", label = "go to dashboard")
     
