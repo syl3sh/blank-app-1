@@ -45,6 +45,7 @@ elif st.session_state.get('authentication_status') is None:
     st.warning("Please enter username and password")
 elif st.session_state.get('authentication_status'):
     st.success('Welcome')
-    authenticator.logout(location='main')
-    st.page_link("pages/dashboard.py", label="Go to Dashboard", icon="📊")
+    if st.button("Go to Dashboard", use_container_width=True):
+        st.switch_page("pages/streamlit_app1.py")
+    
     
