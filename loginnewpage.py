@@ -31,5 +31,11 @@ config = {
         "name": st.secrets["cookie"]["name"],
         "key": st.secrets["cookie"]["key"],
         "expiry_days": st.secrets["cookie"]["expiry_days"]
-    }":
+    }
+    authenticator = stauth.Authenticate(
+    config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days']
+)
     
