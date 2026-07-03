@@ -31,5 +31,5 @@ if authentication_status == False:
 if authentication_status == None:
     st.warning("Please enter Username and Password")
 if authentication_status:
-    st.link_button("Go to Second App", "https://nas-ds-test-14.streamlit.app
+    st.link_button("Go to Second App", "https://nas-ds-test-14.streamlit.app")
 
