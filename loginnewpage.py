@@ -16,20 +16,20 @@ import streamlit_authenticator as stauth
 
 sgt = pytz.timezone("Asia/Singapore")
 
-names = ['admins']
-usernames = ['admin']
-
-file_path = Path(__file__).parent/"hashpswds.pkl"
-with file_path.open("rb") as file:
-    hashed_passwords = pickle.load(file)
-
-authenticator=stauth.Authenticate(names,usernames,hashedpasswords,"web_cookie", "hgfedcba", cookie_expiry_days = 30)
-
-name, authentication_status, username = authenticator.login("Login","main")
-
-if authentication_status == False:
-    st.error("Username/Password is incorrect")
-if authentication_status == None:
-    st.warning("Please enter Username and Password")
-if authentication_status:
-    st.link_button("Go to Second App", "https://nas-ds-test-14.streamlit.app")
+config = {
+    "credentials": {
+        "usernames": {
+            "admin": {
+                "username": st.secrets["credentials"]["usernames"]["admin"]["username"],
+                "password": st.secrets["credentials"]["usernames"]["admin"]["password"],
+                "logged_in": False,
+                "failed_login_attempts": 0
+            }
+        }
+    },
+    "cookie": {
+        "name": st.secrets["cookie"]["name"],
+        "key": st.secrets["cookie"]["key"],
+        "expiry_days": st.secrets["cookie"]["expiry_days"]
+    }":
+    
