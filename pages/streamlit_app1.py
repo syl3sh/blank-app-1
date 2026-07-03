@@ -18,20 +18,14 @@ sgt = pytz.timezone("Asia/Singapore")
 
 st.header("NAS Syst Dashboard", divider="rainbow")
 base = "http://testsvrs.synology.me:5000/webapi"
-wifi = st.secrets["secrets"]["wifiname"]
-wifipassword=st.secrets["secrets"]["wifipasswd"]
 
-def connect_to_wifi(wifi, wifipassword):
-    command = f'netsh wlan connect name ="{wifi}" ssid="{wifi}"keymaterial="{wifipassword}"'
-    try:
-        output = subprocess.run(command,capture_output=True,shell=True,text=True)
-        if "Connection request was commpleted successfully" in output.stdout:
-            print(f"connected successfully to {wifi}")
-        else:
-            print(f"Failed to connect.Error:{output.stdout.strip()}")
-    except Exception as e:
-        print(f"An error occred: {e}")
-connect_to_wifi(f"{wifi}",f"{wifipassword}")
+if not st.session_state.get('authentication_status'):
+    st.error("You must log in first.")
+    if st.button("Go to Login"):
+        st.switch_page("loginnewpage.py")
+    st.stop()
+
+
 
 
 @st.cache_data(ttl=30)
