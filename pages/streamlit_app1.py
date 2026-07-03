@@ -1,16 +1,10 @@
 import streamlit as st
-import pandas as pd
-import io
-import re
-from PIL import Image
 import requests
 import time
-import subprocess
 import datetime
 import wakeonlan
 import pytz
-from pathlib import Path
-import streamlit_authenticator as stauth
+
 
 
 sgt = pytz.timezone("Asia/Singapore")
