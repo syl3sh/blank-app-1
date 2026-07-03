@@ -8,6 +8,7 @@ import streamlit_authenticator as stauth
 
 
 sgt = pytz.timezone("Asia/Singapore")
+base = "http://testsvrs.synology.me:5000/webapi"
 
 config = {
     "credentials": {
