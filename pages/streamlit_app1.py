@@ -13,13 +13,42 @@ sgt = pytz.timezone("Asia/Singapore")
 st.header("NAS Syst Dashboard", divider="rainbow")
 base = "http://testsvrs.synology.me:5000/webapi"
 
+config = {
+    "credentials": {
+        "usernames": {
+            "admin": {
+                "email": st.secrets["credentials"]["usernames"]["admin"]["email"],
+                "first_name": st.secrets["credentials"]["usernames"]["admin"]["first_name"],
+                "last_name": st.secrets["credentials"]["usernames"]["admin"]["last_name"],
+                "username": st.secrets["credentials"]["usernames"]["admin"]["username"],
+                "password": st.secrets["credentials"]["usernames"]["admin"]["password"],
+                "logged_in": False,
+                "failed_login_attempts": 0
+            }
+        }
+    },
+    "cookie": {
+        "name": st.secrets["cookie"]["name"],
+        "key": st.secrets["cookie"]["key"],
+        "expiry_days": st.secrets["cookie"]["expiry_days"]
+    }
+}
+authenticator = stauth.Authenticate(
+    config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days']
+)
+
+authenticator.login(location='unrendered')
+
 if not st.session_state.get('authentication_status'):
     st.error("You must log in first.")
     if st.button("Go to Login"):
         st.switch_page("loginnewpage.py")
     st.stop()
 
-
+authenticator.logout(location='sidebar')
 
 
 @st.cache_data(ttl=30)
