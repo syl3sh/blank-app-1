@@ -20,6 +20,9 @@ config = {
     "credentials": {
         "usernames": {
             "admin": {
+                "email": st.secrets["credentials"]["usernames"]["admin"]["email"],
+                "first_name": st.secrets["credentials"]["usernames"]["admin"]["first_name"],
+                "last_name": st.secrets["credentials"]["usernames"]["admin"]["last_name"],
                 "username": st.secrets["credentials"]["usernames"]["admin"]["username"],
                 "password": st.secrets["credentials"]["usernames"]["admin"]["password"],
                 "logged_in": False,
