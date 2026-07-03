@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import re
+import pickle
 from PIL import Image
 import requests
 import time
