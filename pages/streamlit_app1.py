@@ -136,11 +136,22 @@ def get_utilization(sid):
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         st.error("Lost connection to NAS while fetching utilization info.")
         return {}
-NAS_QUICKCONNECT_ID = st.secrets["secrets"]["QUICKCONNECT_ID"] 
+def _clean_quickconnect_id(raw_id: str) -> str:
+    """Accepts either a bare QuickConnect ID ('Testsvrs') or a pasted URL/link
+    ('https://Testsvrs.quickconnect.to', 'QuickConnect.to/Testsvrs:5000', etc.)
+    and returns just the bare ID, so a copy-paste mistake doesn't break the connection."""
+    cleaned = raw_id.strip()
+    cleaned = cleaned.replace("https://", "").replace("http://", "")
+    cleaned = cleaned.split("/")[-1] if "/" in cleaned else cleaned  # take last path segment
+    cleaned = cleaned.split(":")[0]  # drop any port
+    cleaned = cleaned.split(".")[0]  # drop .quickconnect.to or similar suffix
+    return cleaned
+    
+NAS_QUICKCONNECT_ID = _clean_quickconnect_id(st.secrets["secrets"]["QUICKCONNECT_ID"])
 @st.cache_resource(ttl=1800)
 def get_clients():
     creds = dict(
-        ip_address=NAS_HOST,
+        quickconnect_id=NAS_QUICKCONNECT_ID,
         port=NAS_PORT,
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
