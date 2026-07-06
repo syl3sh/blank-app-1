@@ -133,44 +133,36 @@ def get_utilization(sid):
         return {}
 
         
-def shutdown_nas(sid):
-    try:
-        resp = requests.get(f"{base}/entry.cgi", params={
-        "api": "SYNO.Core.System",
-        "version": "1",
-        "method": "shutdown",
-        "_sid": sid
-    }, timeout=10)
-        return resp.json()
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            return {"success": False, "error": "Connection lost"}
+def set_power_schedule(sid, startup_enabled, startup_hour, startup_min,
+                       shutdown_enabled, shutdown_hour, shutdown_min,
+                       restart_enabled, restart_hour, restart_min, repeat_days):
+    resp = requests.post(f"{base}/entry.cgi", data={
+        "api": "SYNO.Core.System.PowerSchedule",
+        "version": 1,
+        "method": "set",
+        "_sid": sid,
+        "start_enabled": str(startup_enabled).lower(),
+        "start_hour": startup_hour,
+        "start_min": startup_min,
+        "shut_enabled": str(shutdown_enabled).lower(),
+        "shut_hour": shutdown_hour,
+        "shut_min": shutdown_min,
+        "restart_enabled": str(restart_enabled).lower(),
+        "restart_hour": restart_hour,
+        "restart_min": restart_min,
 
-def restart_nas(sid):
-    try:
-        resp = requests.get(f"{base}/entry.cgi", params={
-        "api":"SYNO.Core.System",
-        "version": "1",
-        "method": "reboot",
-        "_sid":sid
-    }, timeout=10)
-        return resp.json()
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return {"success": False, "error": "Connection lost"}
-def wake_nas():
-    wakeonlan.send_magic_packet("00-11-32-C0-13-58")
-    return True
+        "repeat_days": repeat_days  # e.g. "1,2,3,4,5" for Mon-Fri, "0,1,2,3,4,5,6" for every day
+    })
+    return resp.json()
 
 sid = get_sid()
 
 st.subheader("Power Controls")
-if st.button("Turn on NAS", use_container_width=True):
-    wake_nas()
-    st.success("Magic Packet Sent. NAS will turn on soon")
     
 
 if sid:
     
-    col_shutdown,col_restart=st.columns(2)
+    col_shutdown,col_restart,col_start=st.columns(3)
 
     with col_shutdown:
         shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
@@ -222,6 +214,31 @@ if sid:
                     st.error(f"Restart failed: {result1.get('error')}")
             else:
                 st.info(f"Restart in {mins_left1} minutes")
+    with col_start:
+        start_date =st.date_input("Start date", min_value=datetime.date.today())
+        start_time = st.time_input("Start time", value=datetime.time(22, 0))
+        starttime = sgt.localize(datetime.datetime.combine(start_date, start_time))
+        if st.button("Start NAS", use_container_width=True):
+            if st.session_state.get("confirm_start"):
+                st.session_state["starttime"] = starttime
+                st.session_state["confirm_start"] = False
+                st.success(f"Start scheduled for {starttime.strftime('%Y-%m-%d %H:%M')}")
+            else:
+                st.session_state["confirm_start"] = True
+                st.warning("Click start again to confirm.")
+        if "starttime" in st.session_state:
+            now_in_sgt = datetime.datetime.now(sgt)
+            time_difference3 = st.session_state["starttime"]-now_in_sgt
+            mins_left3 = int(time_difference3.total_seconds()/60)
+            if time_difference3.total_seconds() <= 0:
+                result3 = start_nas(sid)
+                if result3.get("success"):
+                    st.success("NAS is starting...")
+                    del st.session_state["starttime"]
+                else:
+                    st.error(f"Start failed: {result3.get('error')}")
+            else:
+                st.info(f"Start in {mins_left3} minutes")
       
 
     st.divider()
