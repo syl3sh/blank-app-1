@@ -179,7 +179,7 @@ if sid and clients:
         st.write("Shutdown Schedule")
         st.caption("Recurring shutdown via the NAS's built-in power schedule — persists even if this tab is closed.")
         shutdown_time = st.time_input("Shutdown time", value=datetime.time(22,0))
-          shutdown_repeat_choice = st.multiselect(
+        shutdown_repeat_choice = st.multiselect(
             "Repeat on", options=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
             default=["Mon", "Tue", "Wed", "Thu", "Fri"], key="shutdown_days"
         )
