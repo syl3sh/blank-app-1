@@ -132,6 +132,34 @@ def get_utilization(sid):
         st.error("Lost connection to NAS while fetching utilization info.")
         return {}
 
+def shutdown_nas(sid):
+    """Ask the NAS to shut down. A dropped connection during this call
+    usually means the NAS went down mid-response, so treat that as success."""
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
+            "api": "SYNO.Core.System",
+            "version": 1,
+            "method": "shutdown",
+            "_sid": sid
+        }, timeout=5)
+        return resp.json()
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"success": True, "note": "Connection dropped — shutdown likely in progress"}
+ 
+ 
+def restart_nas(sid):
+    """Ask the NAS to reboot. Same caveat as shutdown_nas re: dropped connections."""
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
+            "api": "SYNO.Core.System",
+            "version": 1,
+            "method": "reboot",
+            "_sid": sid
+        }, timeout=5)
+        return resp.json()
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"success": True, "note": "Connection dropped — reboot likely in progress"}
+
         
 def set_power_schedule(sid, startup_enabled, startup_hour, startup_min,
                        shutdown_enabled, shutdown_hour, shutdown_min,
@@ -154,6 +182,18 @@ def set_power_schedule(sid, startup_enabled, startup_hour, startup_min,
         "repeat_days": repeat_days  # e.g. "1,2,3,4,5" for Mon-Fri, "0,1,2,3,4,5,6" for every day
     })
     return resp.json()
+def get_power_schedule(sid):
+    """Read back the schedule currently stored on the NAS so you can verify it stuck."""
+    try:
+        resp = requests.get(f"{base}/entry.cgi", params={
+            "api": "SYNO.Core.System.PowerSchedule",
+            "version": 1,
+            "method": "get",
+            "_sid": sid
+        }, timeout=10)
+        return resp.json()
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"success": False, "error": {"code": -1, "message": "Connection lost while fetching power schedule"}}
 
 sid = get_sid()
 
@@ -187,6 +227,7 @@ if sid:
                     del st.session_state["shutdowntime"]
                 else:
                     st.error(f"Shutdown failed: {result.get('error')}")
+                    st.error(f"Shutdown failed (code {err.get('code', '?')}): {err.get('message', result)}")
             else:
                 st.info(f"Shutdown in {mins_left} minutes")
     with col_restart:
@@ -212,33 +253,47 @@ if sid:
                     del st.session_state["restarttime"]
                 else:
                     st.error(f"Restart failed: {result1.get('error')}")
+                    st.error(f"Restart failed (code {err.get('code', '?')}): {err.get('message', result1)}")
             else:
                 st.info(f"Restart in {mins_left1} minutes")
     with col_start:
-        start_date =st.date_input("Start date", min_value=datetime.date.today())
-        start_time = st.time_input("Start time", value=datetime.time(22, 0))
-        starttime = sgt.localize(datetime.datetime.combine(start_date, start_time))
-        if st.button("Start NAS", use_container_width=True):
-            if st.session_state.get("confirm_start"):
-                st.session_state["starttime"] = starttime
-                st.session_state["confirm_start"] = False
-                st.success(f"Start scheduled for {starttime.strftime('%Y-%m-%d %H:%M')}")
+        st.write("Scheduled Startup")
+        st.caption("Uses the NAS's power schedule so it can start after a full shutdown.")
+        start_time = st.time_input("Daily startup time", value = datetime.time(9,0))
+        repeat_choice = st.multiselect(
+            "Repeat on",
+            options=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            default=["Mon", "Tue", "Wed", "Thu", "Fri"]
+        )
+        day_map = {"Mon": "1", "Tue": "2", "Wed": "3", "Thu": "4", "Fri": "5", "Sat": "6", "Sun": "0"}
+        repeat_days = ",".join(day_map[d] for d in repeat_choice) if repeat_choice else ""
+        if st.button("Save Startup Schedule", use_container_width = True):
+            result3 = set_power_schedule(
+                sid,
+                startup_enabled = True,
+                startup_hour= start_time.hour,
+                startup_min = start_time.minute,
+                shutdown_enabled=False,
+                shutdown_hour= 0,
+                shutdown_min = 0,
+                restart_enabled = False,
+                restart_hour = 0,
+                restart_min = 0,
+                repeat_days= repeat_days,
+            )
+            if  result3.get("success"):
+                st.success(f"Startup scheduled for {start_time.strftime('%H:%M')} on {', '.join(repeat_choice) or 'no days selected'}")
             else:
-                st.session_state["confirm_start"] = True
-                st.warning("Click start again to confirm.")
-        if "starttime" in st.session_state:
-            now_in_sgt = datetime.datetime.now(sgt)
-            time_difference3 = st.session_state["starttime"]-now_in_sgt
-            mins_left3 = int(time_difference3.total_seconds()/60)
-            if time_difference3.total_seconds() <= 0:
-                result3 = start_nas(sid)
-                if result3.get("success"):
-                    st.success("NAS is starting...")
-                    del st.session_state["starttime"]
-                else:
-                    st.error(f"Start failed: {result3.get('error')}")
+                err = result3.get("error", {})
+                st.error(f"Failed to save schedule (code {err.get('code', '?')}): {err.get('message', result3)}")
+ 
+        with st.expander("View current power schedule on NAS"):
+            schedule = get_power_schedule(sid)
+            if schedule.get("success"):
+                st.json(schedule["data"])
             else:
-                st.info(f"Start in {mins_left3} minutes")
+                err = schedule.get("error", {})
+                st.error(f"Could not read schedule (code {err.get('code', '?')}): {err.get('message', schedule)}")
       
 
     st.divider()
