@@ -18,7 +18,7 @@ sgt = pytz.timezone("Asia/Singapore")
 
 st.header("NAS Syst Dashboard", divider="rainbow")
 base = "http://testsvrs.synology.me:5000/webapi"
-NAS_HOST = "http://QuickConnect.to/Testsvrs"
+NAS_HOST = "testsvrs.synology.me"
 NAS_PORT = "5000"
 RESTART_TASK_NAME = "Dashboard Scheduled Restart"
 
@@ -136,7 +136,7 @@ def get_utilization(sid):
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         st.error("Lost connection to NAS while fetching utilization info.")
         return {}
-
+NAS_QUICKCONNECT_ID = st.secrets["secrets"]["QUICKCONNECT_ID"] 
 @st.cache_resource(ttl=1800)
 def get_clients():
     creds = dict(
