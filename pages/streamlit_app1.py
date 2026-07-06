@@ -6,6 +6,9 @@ import wakeonlan
 import pytz
 from pathlib import Path
 import streamlit_authenticator as stauth
+from synology_api.core_sys_info import SysInfo
+from synology_api.event_scheduler import EventScheduler
+from synology_api.task_scheduler import TaskScheduler
 
 
 
