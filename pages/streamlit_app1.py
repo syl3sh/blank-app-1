@@ -154,7 +154,6 @@ def get_clients():
         quickconnect_id=NAS_QUICKCONNECT_ID,
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
-        secure= False,
         dsm_version = 6,
         debug = False,
     )
