@@ -167,7 +167,7 @@ def set_power_schedule(sid, poweron_tasks, poweroff_tasks):
         "version": 1,
         "method": "set",
         "_sid": sid,
-        "poweron_tasks": = json.dumps(poweron_tasks),
+        "poweron_tasks": json.dumps(poweron_tasks),
         "poweroff_tasks": json.dumps(poweroff_tasks)
 
         "repeat_days": repeat_days  # e.g. "1,2,3,4,5" for Mon-Fri, "0,1,2,3,4,5,6" for every day
