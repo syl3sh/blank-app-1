@@ -18,7 +18,9 @@ sgt = pytz.timezone("Asia/Singapore")
 
 st.header("NAS Syst Dashboard", divider="rainbow")
 base = "http://testsvrs.synology.me:5000/webapi"
-
+NAS_HOST = "testsvrs.synology.me"
+NAS_PORT = "5000"
+RESTART_TASK_NAME = "Dashboard Scheduled Restart"
 
 config = {
     "credentials": {
