@@ -155,17 +155,16 @@ def get_clients():
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
         dsm_version = 6,
-        debug = False,
+        debug = True,
     )
-    try:
-        return{
-            "sys": SysInfo(**creds),
-            "scheduler": EventScheduler(**creds),
-            "tasks":TaskScheduler(**creds),
-        }
-    except Exception as e:
-        st.error(f" Could not connect/login to NAS via synology-api{e}")
-        return None
+    result = {}
+    for label, cls in [("sys", SysInfo), ("scheduler", EventScheduler), ("tasks", TaskScheduler)]:
+        try:
+            result[label] = cls(**creds)
+        except Exception as e:
+            st.error(f"Failed to initialize '{label}' client ({cls.__name__}): {e}")
+            return None
+    return result
         
 def find_task_by_name(tasks_client,name):
     result = tasks_client.get_task_list()
