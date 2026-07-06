@@ -152,7 +152,6 @@ NAS_QUICKCONNECT_ID = _clean_quickconnect_id(st.secrets["secrets"]["QUICKCONNECT
 def get_clients():
     creds = dict(
         quickconnect_id=NAS_QUICKCONNECT_ID,
-        port=NAS_PORT,
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
         secure= False,
