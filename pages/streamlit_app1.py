@@ -155,7 +155,7 @@ def get_clients():
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
         secure= False,
-        dsm_version = 7,
+        dsm_version = 6,
         debug = False,
     )
     try:
