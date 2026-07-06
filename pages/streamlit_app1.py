@@ -186,7 +186,7 @@ def get_power_schedule(sid):
     """Read back the schedule currently stored on the NAS so you can verify it stuck."""
     try:
         resp = requests.get(f"{base}/entry.cgi", params={
-            "api": "SYNO.Core.System.PowerSchedule",
+            "api": "SYNO.Core.Hardware.PowerSchedule",
             "version": 1,
             "method": "get",
             "_sid": sid
