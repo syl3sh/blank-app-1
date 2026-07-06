@@ -161,23 +161,14 @@ def restart_nas(sid):
         return {"success": True, "note": "Connection dropped — reboot likely in progress"}
 
         
-def set_power_schedule(sid, startup_enabled, startup_hour, startup_min,
-                       shutdown_enabled, shutdown_hour, shutdown_min,
-                       restart_enabled, restart_hour, restart_min, repeat_days):
+def set_power_schedule(sid, poweron_tasks, poweroff_tasks):
     resp = requests.post(f"{base}/entry.cgi", data={
         "api": "SYNO.Core.Hardware.PowerSchedule",
         "version": 1,
         "method": "set",
         "_sid": sid,
-        "start_enabled": str(startup_enabled).lower(),
-        "start_hour": startup_hour,
-        "start_min": startup_min,
-        "shut_enabled": str(shutdown_enabled).lower(),
-        "shut_hour": shutdown_hour,
-        "shut_min": shutdown_min,
-        "restart_enabled": str(restart_enabled).lower(),
-        "restart_hour": restart_hour,
-        "restart_min": restart_min,
+        "poweron_tasks": = json.dumps(poweron_tasks),
+        "poweroff_tasks": json.dumps(poweroff_tasks)
 
         "repeat_days": repeat_days  # e.g. "1,2,3,4,5" for Mon-Fri, "0,1,2,3,4,5,6" for every day
     })
@@ -188,7 +179,7 @@ def get_power_schedule(sid):
         resp = requests.get(f"{base}/entry.cgi", params={
             "api": "SYNO.Core.Hardware.PowerSchedule",
             "version": 1,
-            "method": "get",
+            "method": "load",
             "_sid": sid
         }, timeout=10)
         return resp.json()
@@ -268,20 +259,20 @@ if sid:
         day_map = {"Mon": "1", "Tue": "2", "Wed": "3", "Thu": "4", "Fri": "5", "Sat": "6", "Sun": "0"}
         repeat_days = ",".join(day_map[d] for d in repeat_choice) if repeat_choice else ""
         if st.button("Save Startup Schedule", use_container_width = True):
+            existing= get_power_schedule(sid)
+            existing_poweroff = existing.get("data",{}).get("poweroff_tasks",[]) if existing.get("success") else[]
+            new_poweron_tasks = [{
+                "enable":True,
+                "hour":start_time.hour,
+                "min":start_time.minute,
+                "weekdays": repeat_days
+            }] if repeat_days else []
             result3 = set_power_schedule(
                 sid,
-                startup_enabled = True,
-                startup_hour= start_time.hour,
-                startup_min = start_time.minute,
-                shutdown_enabled=False,
-                shutdown_hour= 0,
-                shutdown_min = 0,
-                restart_enabled = False,
-                restart_hour = 0,
-                restart_min = 0,
-                repeat_days= repeat_days,
+                poweron_tasks=new_poweron_tasks,
+                poweroff_tasks=existing_poweroff
             )
-            if  result3.get("success"):
+            if result3.get("success"):
                 st.success(f"Startup scheduled for {start_time.strftime('%H:%M')} on {', '.join(repeat_choice) or 'no days selected'}")
             else:
                 err = result3.get("error", {})
