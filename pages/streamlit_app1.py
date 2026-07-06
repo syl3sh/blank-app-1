@@ -132,161 +132,129 @@ def get_utilization(sid):
         st.error("Lost connection to NAS while fetching utilization info.")
         return {}
 
-def shutdown_nas(sid):
-    """Ask the NAS to shut down. A dropped connection during this call
-    usually means the NAS went down mid-response, so treat that as success."""
+@st.cache_resource(ttl=1800)
+def get_clients():
+    creds = dict(
+        ip_address=NAS_HOST,
+        port=NAS_PORT,
+        username=st.secrets["secrets"]["DB_USERNAME"],
+        password=st.secrets["secrets"]["DB_PASSWORD"],
+        secure= False,
+        dsm_version = 7,
+        debug = False,
+    )
     try:
-        resp = requests.get(f"{base}/entry.cgi", params={
-            "api": "SYNO.Core.System",
-            "version": 1,
-            "method": "shutdown",
-            "_sid": sid
-        }, timeout=5)
-        return resp.json()
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return {"success": True, "note": "Connection dropped — shutdown likely in progress"}
- 
- 
-def restart_nas(sid):
-    """Ask the NAS to reboot. Same caveat as shutdown_nas re: dropped connections."""
-    try:
-        resp = requests.get(f"{base}/entry.cgi", params={
-            "api": "SYNO.Core.System",
-            "version": 1,
-            "method": "reboot",
-            "_sid": sid
-        }, timeout=5)
-        return resp.json()
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return {"success": True, "note": "Connection dropped — reboot likely in progress"}
-
+        return{
+            "sys": SysInfo(**creds),
+            "scheduler": EventScheduler(**creds),
+            "tasks":TaskScheduler(**creds),
+        }
+    except Exception as e:
+        st.error(f" Could not connect/login to NAS via synology-api{e}")
+        return None
         
-def set_power_schedule(sid, poweron_tasks, poweroff_tasks):
-    resp = requests.post(f"{base}/entry.cgi", data={
-        "api": "SYNO.Core.Hardware.PowerSchedule",
-        "version": 1,
-        "method": "set",
-        "_sid": sid,
-        "poweron_tasks": json.dumps(poweron_tasks),
-        "poweroff_tasks": json.dumps(poweroff_tasks),
-
-        "repeat_days": repeat_days  # e.g. "1,2,3,4,5" for Mon-Fri, "0,1,2,3,4,5,6" for every day
-    })
-    return resp.json()
-def get_power_schedule(sid):
-    """Read back the schedule currently stored on the NAS so you can verify it stuck."""
-    try:
-        resp = requests.get(f"{base}/entry.cgi", params={
-            "api": "SYNO.Core.Hardware.PowerSchedule",
-            "version": 1,
-            "method": "load",
-            "_sid": sid
-        }, timeout=10)
-        return resp.json()
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return {"success": False, "error": {"code": -1, "message": "Connection lost while fetching power schedule"}}
+def find_task_by_name(tasks_client,name):
+    result = tasks_client.get_task_list()
+    if not result.get("success"):
+        return None
+    for task in result.get("data", {}).get("tasks",[]):
+        if task.get("name") == name:
+            return task
+    return None
+    
+        
 
 sid = get_sid()
+clients=get_clients() if sid else None
 
 st.subheader("Power Controls")
     
 
-if sid:
+if sid and clients:
     
-    col_shutdown,col_restart,col_start=st.columns(3)
+    col_shutdown,col_start=st.columns(2)
+    day_map = {"Mon": "1", "Tue": "2", "Wed": "3", "Thu": "4", "Fri": "5", "Sat": "6", "Sun": "0"}
 
     with col_shutdown:
-        shutdown_date = st.date_input("Shutdown date",min_value=datetime.date.today())
+        st.write("Shutdown Schedule")
+        st.caption("Recurring shutdown via the NAS's built-in power schedule — persists even if this tab is closed.")
         shutdown_time = st.time_input("Shutdown time", value=datetime.time(22,0))
-        shutdowntime = sgt.localize(datetime.datetime.combine(shutdown_date,shutdown_time))
-        if st.button("⏻ Shutdown NAS", type="primary", use_container_width=True):
-            if st.session_state.get("confirm_shutdown"):
-                st.session_state["shutdowntime"] = shutdowntime
-                st.session_state["confirm_shutdown"] = False
-                st.success(f"Shutdown scheduled for {shutdowntime.strftime('%Y-%m-%d %H:%M')}")
+          shutdown_repeat_choice = st.multiselect(
+            "Repeat on", options=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            default=["Mon", "Tue", "Wed", "Thu", "Fri"], key="shutdown_days"
+        )
+        shutdown_repeat_days = ",".join(day_map[d] for d in shutdown_repeat_choice) if shutdown_repeat_choice else ""
+ 
+        if st.button("💾 Save Shutdown Schedule", use_container_width=True):
+            existing = clients["scheduler"].load_power_schedule()
+            existing_poweron = existing.get("data", {}).get("poweron_tasks", []) if existing.get("success") else []
+            new_poweroff_tasks = [{
+                "enabled": True, "hour": shutdown_time.hour, "min": shutdown_time.minute,
+                "weekdays": shutdown_repeat_days
+            }] if shutdown_repeat_days else []
+            result = clients["scheduler"].set_power_schedule(
+                poweron_tasks=existing_poweron, poweroff_tasks=new_poweroff_tasks
+            )
+            if result.get("success"):
+                st.success(f"Shutdown scheduled for {shutdown_time.strftime('%H:%M')} on {', '.join(shutdown_repeat_choice) or 'no days'}")
             else:
-                st.session_state["confirm_shutdown"] = True
-                st.warning("Click Shutdown again to confirm.")
-        if "shutdowntime" in st.session_state:
-            now_in_sgt = datetime.datetime.now(sgt)
-            time_difference1 = st.session_state["shutdowntime"]-now_in_sgt
-            mins_left = int(time_difference1.total_seconds()/60)
-            if time_difference1.total_seconds() <= 0:
-                result = shutdown_nas(sid)
-                if result.get("success"):
+                err = result.get("error", {})
+                st.error(f"Failed to save (code {err.get('code', '?')})")
+ 
+        st.divider()
+        if st.button("⏻ Shutdown NAS now", type="primary", use_container_width=True):
+            if st.session_state.get("confirm_shutdown_now"):
+                result = clients["sys"].shutdown()
+                st.session_state["confirm_shutdown_now"] = False
+                if isinstance(result, dict) and not result.get("success", True):
+                    err = result.get("error", {})
+                    st.error(f"Shutdown failed (code {err.get('code', '?')})")
+                else:
                     st.success("NAS is shutting down...")
-                    del st.session_state["shutdowntime"]
-                else:
-                    st.error(f"Shutdown failed: {result.get('error')}")
-                    st.error(f"Shutdown failed (code {err.get('code', '?')}): {err.get('message', result)}")
             else:
-                st.info(f"Shutdown in {mins_left} minutes")
-    with col_restart:
-        restart_date = st.date_input("Restart date",min_value=datetime.date.today())
-        restart_time = st.time_input("Restart time", value=datetime.time(22,0))
-        restarttime = sgt.localize(datetime.datetime.combine(restart_date,restart_time))
-        if st.button("🔄 Restart NAS", use_container_width=True):
-            if st.session_state.get("confirm_restart"):
-                st.session_state["restarttime"] = restarttime
-                st.session_state["confirm_restart"] = False
-                st.success(f"Restart scheduled for {restarttime.strftime('%Y-%m-%d %H:%M')}")
-            else:
-                st.session_state["confirm_restart"] = True
-                st.warning("Click Restart again to confirm.")
-        if "restarttime" in st.session_state:
-            now_in_sgt = datetime.datetime.now(sgt)
-            timedifference2 = st.session_state["restarttime"]-now_in_sgt
-            mins_left1 = int(timedifference2.total_seconds()/60)
-            if timedifference2.total_seconds()<=0:
-                result1 = restart_nas(sid)
-                if result1.get("success"):
-                    st.success("NAS is restarting...")
-                    del st.session_state["restarttime"]
-                else:
-                    st.error(f"Restart failed: {result1.get('error')}")
-                    st.error(f"Restart failed (code {err.get('code', '?')}): {err.get('message', result1)}")
-            else:
-                st.info(f"Restart in {mins_left1} minutes")
+                st.session_state["confirm_shutdown_now"] = True
+                st.warning("Click again to confirm immediate shutdown.")
     with col_start:
-        st.write("Scheduled Startup")
-        st.caption("Uses the NAS's power schedule so it can start after a full shutdown.")
-        start_time = st.time_input("Daily startup time", value = datetime.time(9,0))
+        st.write("**Startup Schedule**")
+        st.caption("Uses the NAS's built-in power schedule (RTC-based) so it starts back up even after a full shutdown.")
+        start_time = st.time_input("Daily startup time", value=datetime.time(8, 0))
         repeat_choice = st.multiselect(
             "Repeat on",
             options=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-            default=["Mon", "Tue", "Wed", "Thu", "Fri"]
+            default=["Mon", "Tue", "Wed", "Thu", "Fri"], key="startup_days"
         )
-        day_map = {"Mon": "1", "Tue": "2", "Wed": "3", "Thu": "4", "Fri": "5", "Sat": "6", "Sun": "0"}
         repeat_days = ",".join(day_map[d] for d in repeat_choice) if repeat_choice else ""
-        if st.button("Save Startup Schedule", use_container_width = True):
-            existing= get_power_schedule(sid)
-            existing_poweroff = existing.get("data",{}).get("poweroff_tasks",[]) if existing.get("success") else[]
+ 
+        if st.button("💾 Save Startup Schedule", use_container_width=True):
+            existing = clients["scheduler"].load_power_schedule()
+            existing_poweroff = existing.get("data", {}).get("poweroff_tasks", []) if existing.get("success") else []
             new_poweron_tasks = [{
-                "enable":True,
-                "hour":start_time.hour,
-                "min":start_time.minute,
+                "enabled": True, "hour": start_time.hour, "min": start_time.minute,
                 "weekdays": repeat_days
             }] if repeat_days else []
-            result3 = set_power_schedule(
-                sid,
-                poweron_tasks=new_poweron_tasks,
-                poweroff_tasks=existing_poweroff
+            result3 = clients["scheduler"].set_power_schedule(
+                poweron_tasks=new_poweron_tasks, poweroff_tasks=existing_poweroff
             )
             if result3.get("success"):
                 st.success(f"Startup scheduled for {start_time.strftime('%H:%M')} on {', '.join(repeat_choice) or 'no days selected'}")
             else:
                 err = result3.get("error", {})
-                st.error(f"Failed to save schedule (code {err.get('code', '?')}): {err.get('message', result3)}")
+                st.error(f"Failed to save schedule (code {err.get('code', '?')})")
  
         with st.expander("View current power schedule on NAS"):
-            schedule = get_power_schedule(sid)
+            schedule = clients["scheduler"].load_power_schedule()
             if schedule.get("success"):
                 st.json(schedule["data"])
             else:
                 err = schedule.get("error", {})
-                st.error(f"Could not read schedule (code {err.get('code', '?')}): {err.get('message', schedule)}")
-      
-
+                st.error(f"Could not read schedule (code {err.get('code', '?')})")
+ 
+        with st.expander("View current restart schedule task"):
+            task = find_task_by_name(clients["tasks"], RESTART_TASK_NAME)
+            if task:
+                st.json(task)
+            else:
+                st.info("No restart schedule task configured yet.")
     st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
