@@ -68,7 +68,7 @@ def get_sid():
     try:
         login = requests.get(f"{base}/auth.cgi", params={
                 "api":"SYNO.API.Auth",
-                "version": 6,
+                "version": 7,
                 "method": "login",
                 "account": st.secrets["secrets"]["DB_USERNAME"],
                 "passwd": st.secrets["secrets"]["DB_PASSWORD"],
@@ -155,7 +155,7 @@ def get_clients():
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
         secure= False,
-        dsm_version = 6,
+        dsm_version = 7,
         debug = False,
     )
     try:
