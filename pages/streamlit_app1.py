@@ -165,7 +165,7 @@ def set_power_schedule(sid, startup_enabled, startup_hour, startup_min,
                        shutdown_enabled, shutdown_hour, shutdown_min,
                        restart_enabled, restart_hour, restart_min, repeat_days):
     resp = requests.post(f"{base}/entry.cgi", data={
-        "api": "SYNO.Core.System.PowerSchedule",
+        "api": "SYNO.Core.Hardware.PowerSchedule",
         "version": 1,
         "method": "set",
         "_sid": sid,
