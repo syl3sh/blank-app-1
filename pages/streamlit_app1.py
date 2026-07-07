@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import time
 import datetime
-import wakeonlan
 import pytz
 from pathlib import Path
 import streamlit_authenticator as stauth
