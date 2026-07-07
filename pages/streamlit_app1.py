@@ -266,7 +266,7 @@ if sid and clients:
                 st.error(f"Failed to save schedule (code {err.get('code', '?')})")
  
         with st.expander("View current power schedule on NAS"):
-            schedule = safe_call(clients["scheduler"].load_power_schedule())
+            schedule = safe_call(clients["scheduler"].load_power_schedule)
             if schedule.get("success"):
                 st.json(schedule["data"])
             else:
