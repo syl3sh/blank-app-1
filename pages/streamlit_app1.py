@@ -146,6 +146,17 @@ def _clean_quickconnect_id(raw_id: str) -> str:
     cleaned = cleaned.split(".")[0]  # drop .quickconnect.to or similar suffix
     return cleaned
     
+def safe_call(func, *args, **kwargs):
+    """Call a synology-api library method and normalize any raised exception
+    (e.g. CoreError) into the same {"success": False, "error": {...}} shape
+    the rest of this app already expects — so a scheduling error shows a
+    message instead of crashing the whole page."""
+    try:
+        return func(*args, **kwargs)
+    except Exception as e:
+        code = getattr(e, "error_code", "?")
+        return {"success": False, "error": {"code": code, "message": str(e)}}
+    
 @st.cache_resource(ttl=1800)
 def get_clients():
     creds = dict(
