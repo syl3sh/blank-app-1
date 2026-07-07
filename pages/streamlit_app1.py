@@ -147,11 +147,12 @@ def _clean_quickconnect_id(raw_id: str) -> str:
     cleaned = cleaned.split(".")[0]  # drop .quickconnect.to or similar suffix
     return cleaned
     
-NAS_QUICKCONNECT_ID = _clean_quickconnect_id(st.secrets["secrets"]["QUICKCONNECT_ID"])
 @st.cache_resource(ttl=1800)
 def get_clients():
     creds = dict(
-        quickconnect_id=NAS_QUICKCONNECT_ID,
+        ip_address=NAS_HOST,
+        port=NAS_PORT,
+        secure=False,
         username=st.secrets["secrets"]["DB_USERNAME"],
         password=st.secrets["secrets"]["DB_PASSWORD"],
         dsm_version = 6,
