@@ -263,12 +263,7 @@ if sid and clients:
                 err = schedule.get("error", {})
                 st.error(f"Could not read schedule (code {err.get('code', '?')})")
  
-        with st.expander("View current restart schedule task"):
-            task = find_task_by_name(clients["tasks"], RESTART_TASK_NAME)
-            if task:
-                st.json(task)
-            else:
-                st.info("No restart schedule task configured yet.")
+        
     st.divider()
     sys_info=get_system_info(sid)
     storage_info= get_storage_info(sid)
