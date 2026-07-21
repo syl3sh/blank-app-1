@@ -13,7 +13,7 @@ if st.button("Save Changes on Dashboard"):
 def convert_df_to_excel(df):
   output = BytesIO()
   with pd.ExcelWriter(output, engine = "openpyxl") as writer:
-    df.to_excel(writer, index = False, sheet_naem = "sheet1")
+    df.to_excel(writer, index = False, sheet_name = "sheet1")
     return output.getvalue()
 
 st.download_button(
