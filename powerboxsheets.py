@@ -16,6 +16,8 @@ def convert_df_to_excel(df):
     df.to_excel(writer, index = False, sheet_name = "sheet1")
     return output.getvalue()
 
+excel_data = convert_df_to_excel(edited_df)
+
 st.download_button(
     label="Save copy as Excel",
     data=excel_data,
